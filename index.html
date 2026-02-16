@@ -1,0 +1,2663 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <!-- /standard (Kim Sze) -->
+  <link rel="icon" href="./kimsze_sharp16.ico?v=20260111a" sizes="any">
+  <link rel="shortcut icon" href="./kimsze_sharp16.ico?v=20260111a">
+
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <title>Word Problems — Choose the Right Model (Compare / Part-Whole)</title>
+
+  <!-- ✅ Always-Clear on Load (Default Build Contract) -->
+  <script>
+  (function(){
+    const ACTIVITY_ID = "https://limkimsze-maker.github.io/Model_Chooser_WordProblems/";
+    try{
+      const toDelete = [];
+      for(let i=0;i<localStorage.length;i++){
+        const k = localStorage.key(i);
+        if(!k) continue;
+        if(k === ACTIVITY_ID) toDelete.push(k);
+        if(k.startsWith(ACTIVITY_ID + "::")) toDelete.push(k);
+        if(k.startsWith("sls_scope::" + ACTIVITY_ID)) toDelete.push(k);
+        if(k.startsWith("UFCO-firstSubmit::" + ACTIVITY_ID)) toDelete.push(k);
+        if(k.startsWith("sls_unlike_payload::" + ACTIVITY_ID)) toDelete.push(k);
+      }
+      toDelete.forEach(k=>localStorage.removeItem(k));
+      try{
+        sessionStorage.removeItem("UFCO-firstSubmit::" + ACTIVITY_ID);
+        sessionStorage.removeItem("UFCO-lastTs::" + ACTIVITY_ID);
+      }catch(e){}
+      try{
+        const bc = new BroadcastChannel("xapi-state");
+        bc.postMessage({type:"clear", activityId: ACTIVITY_ID, ts: Date.now()});
+        bc.close();
+      }catch(e){}
+    }catch(e){}
+    window.__ACTIVITY_ID__ = ACTIVITY_ID;
+  })();
+  </script>
+
+  <!-- Counter.dev (UTC+8) -->
+  <script>
+    (function(){
+      var s=document.createElement("script");
+      s.async=true;
+      s.src="https://cdn.counter.dev/script.js";
+      s.setAttribute("data-id","YOUR_COUNTERDEV_ID");
+      s.setAttribute("data-utcoffset","8");
+      document.head.appendChild(s);
+    })();
+  </script>
+
+  <style>
+    :root{
+      --bg1:#f6fbff;
+      --bg2:#fff7ed;
+      --ink:#0f172a;
+      --muted:#64748b;
+      --shadow:0 14px 34px rgba(2,6,23,.10);
+
+      --good:#16a34a;
+      --bad:#e11d48;
+
+      /* Bars */
+      --pink:#f6b0b0;
+      --blue:#9dc8f2;
+
+      /* PW bar */
+      --sumLeft:#d8e6ff;
+      --sumRight:#86a9e6;
+
+      --font: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+
+      /* Braces */
+      --braceInk:#0b1220;
+      --braceW:3.2;
+      --braceH:26px;
+
+      /* Compare braces placement */
+      --cmpLeft: 174px;
+      --cmpRightPad: -5px;
+
+      /* Blanks */
+      --blankMin: 72px;
+      --blankMax: 122px;
+
+      /* Model size */
+      --modelMaxW: 980px;
+      --barH: 54px;
+      --barStroke: 3px;
+      --barStrokeInk:#0b1220;
+
+      /* Part-whole ratio clamp */
+      --pwMinPct: 20;  /* min % width for small part */
+      --pwMaxPct: 80;  /* max % width for small part */
+
+      /* Part-whole nudges */
+      --pwModelDown: 78px;
+      --pwTopShiftRight: 56px;
+      --pwTopUp: 56px;
+
+      /* Prominent check button */
+      --checkGlow: 0 16px 34px rgba(2,6,23,.16);
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--font);
+      color:var(--ink);
+      background:
+        radial-gradient(1200px 700px at 15% 10%, #dbeafe 0%, transparent 60%),
+        radial-gradient(1200px 700px at 85% 10%, #ffedd5 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg1), #ffffff 45%, var(--bg2));
+      overflow:hidden;
+    }
+
+    .wrap{height:100vh;display:flex;align-items:stretch;justify-content:stretch;}
+    .app{
+      width:100vw;height:100vh;
+      background:rgba(255,255,255,.68);
+      border:0;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .topbar{
+      padding:10px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      border-bottom:1px solid rgba(15,23,42,.08);
+      background:linear-gradient(180deg, rgba(255,255,255,.85), rgba(255,255,255,.55));
+      flex:0 0 auto;
+    }
+    .title h1{ margin:0; font-size:14px; letter-spacing:.2px; }
+    .title .sub{ font-size:11px; color:var(--muted); margin-top:2px; }
+
+    .controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;}
+    .seg{
+      display:flex;background:#fff;border:1px solid rgba(15,23,42,.12);
+      border-radius:999px;padding:4px;gap:4px;
+      box-shadow:0 6px 16px rgba(2,6,23,.06);
+    }
+    .seg button{
+      border:0;background:transparent;
+      padding:7px 9px;border-radius:999px;
+      font-weight:1000;font-size:12px;cursor:pointer;color:var(--muted);
+      white-space:nowrap;
+    }
+    .seg button.active{background:#0ea5e9;color:white;}
+
+    .btn{
+      border:1px solid rgba(15,23,42,.12);
+      background:#fff;padding:8px 10px;border-radius:12px;
+      cursor:pointer;font-weight:1000;font-size:12px;
+      box-shadow:0 8px 18px rgba(2,6,23,.07);
+    }
+    .btn.primary{ background:#111827; color:#fff; border-color:#111827; }
+    .btn.warn{ background:#fff1f2; border-color:rgba(225,29,72,.25); }
+    .btn:active{ transform:translateY(1px); }
+
+    /* ✅ Prominent check button (next to answer) */
+    .btn.checkBig{
+      padding:10px 14px;
+      border-radius:14px;
+      font-size:13px;
+      box-shadow: var(--checkGlow);
+      border-width:2px;
+    }
+
+    .badge{
+      display:flex;align-items:center;gap:8px;
+      padding:6px 10px;border-radius:999px;
+      border:1px solid rgba(15,23,42,.12);
+      background:rgba(255,255,255,.8);
+      font-weight:1000;font-size:12px;
+    }
+    .dot{ width:10px;height:10px;border-radius:999px;background:#a3a3a3; }
+
+    .main{
+      flex:1;
+      overflow:hidden;
+      padding:10px;
+      display:grid;
+      grid-template-columns: 1.45fr .55fr;
+      gap:10px;
+      min-height:0;
+    }
+
+    .card{
+      background:rgba(255,255,255,.82);
+      border:1px solid rgba(15,23,42,.10);
+      border-radius:22px;
+      box-shadow:0 12px 26px rgba(2,6,23,.07);
+      overflow:hidden;
+      min-height:0;
+      display:flex;
+      flex-direction:column;
+    }
+    .hd{
+      padding:9px 12px;
+      border-bottom:1px solid rgba(15,23,42,.08);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex:0 0 auto;
+    }
+    .hd .h{ font-weight:1100; font-size:13px; }
+
+    .bd{
+      padding:12px;
+      min-height:0;
+      overflow:auto;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .questionTitle{font-weight:1100;font-size:14px;margin:0 0 2px 0;color:#0f172a;}
+    .qBox{border-top:1px solid rgba(15,23,42,.08);padding-top:10px;}
+    .question{font-size:22px;line-height:1.25;font-weight:1100;margin:0;color:#0f172a;}
+    .note{margin-top:8px;font-size:12px;font-weight:1000;color:rgba(15,23,42,.62);}
+
+    /* $-blank */
+    .moneyBlank{display:inline-flex;align-items:center;gap:6px;vertical-align:middle;}
+    .dollarSign{font-weight:1300;font-size:18px;color:#0b1220;opacity:.92;user-select:none;}
+    .blank{
+      display:inline-flex;align-items:center;justify-content:center;
+      min-width:var(--blankMin);max-width:var(--blankMax);
+      border-radius:12px;background:#fff;border:3px solid #4f82e6;
+      box-shadow:0 8px 18px rgba(2,6,23,.08);
+      overflow:hidden;vertical-align:middle;
+    }
+    .blank input{
+      width:100%;border:0;outline:none;font:inherit;font-weight:1200;
+      padding:6px 8px;text-align:center;background:transparent;font-size:18px;
+    }
+
+    /* Gate */
+    .gate{
+      border:1px dashed rgba(15,23,42,.25);
+      border-radius:18px;
+      background:linear-gradient(180deg, rgba(248,250,252,.9), rgba(255,255,255,.6));
+      padding:12px;
+      display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+    }
+    .gate .hint{font-weight:1000;color:rgba(15,23,42,.78);font-size:13px;}
+    .gateBtns{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;}
+    .choiceBtn{
+      border:2px solid rgba(15,23,42,.14);
+      background:#fff;padding:10px 12px;border-radius:16px;
+      cursor:pointer;font-weight:1100;font-size:13px;
+      box-shadow:0 10px 22px rgba(2,6,23,.08);
+      white-space:nowrap;
+    }
+    .choiceBtn.correct{border-color:rgba(22,163,74,.35);background:#ecfdf3;}
+    .choiceBtn.wrong{border-color:rgba(225,29,72,.30);background:#fff1f2;}
+
+    /* Model */
+    .modelWrap{
+      border:1px dashed rgba(15,23,42,.22);
+      border-radius:18px;
+      padding:14px;
+      background:linear-gradient(180deg, rgba(248,250,252,.9), rgba(255,255,255,.6));
+      overflow:hidden;
+      display:flex;align-items:center;justify-content:center;
+      min-height:360px;
+      position:relative;
+    }
+    .modelHiddenOverlay{
+      position:absolute;inset:0;
+      display:flex;align-items:center;justify-content:center;
+      background:rgba(255,255,255,.78);
+      backdrop-filter: blur(4px);
+      border-radius:18px;
+      z-index:5;padding:18px;text-align:center;
+    }
+    .modelHiddenOverlay .bigText{
+      font-weight:1200;font-size:16px;color:rgba(15,23,42,.78);
+      line-height:1.25;max-width:680px;
+    }
+
+    .modelStage{
+      width:min(var(--modelMaxW), 100%);
+      position:relative;
+      padding: 20px 10px 54px 10px;
+    }
+
+    /* 2-column model layout */
+    .modelRow{
+      width:100%;
+      display:grid;
+      grid-template-columns: 320px 1fr;
+      gap:14px;
+      align-items:start;
+    }
+    .modelCanvas{
+      position:relative;
+      width:100%;
+      min-width:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding-top: var(--pwModelDown);
+    }
+    @media (max-width: 700px){
+      .modelRow{ grid-template-columns: 1fr; }
+      .modelCanvas{ padding-top: 26px; }
+    }
+
+    /* Helping words panel (light green) */
+    .helperPanel{
+      width:100%;
+      margin:0;
+      padding:10px 12px;
+      border-radius:16px;
+      background:#eaffef;
+      border:2px dashed rgba(22,163,74,.35);
+      box-shadow:0 10px 22px rgba(2,6,23,.06);
+    }
+    .helperTitle{
+      display:flex;align-items:baseline;gap:10px;
+      font-weight:1200;font-size:13px;color:#0b1220;margin-bottom:8px;flex-wrap:wrap;
+    }
+    .helperTitle .sub{font-weight:1000;font-size:12px;color:rgba(15,23,42,.65);}
+
+    /* ✅ Brace primitive (RESTORED/KEPT) */
+    .braceSpan{
+      position:absolute;
+      height:var(--braceH);
+      pointer-events:none;
+      overflow:visible;
+      z-index:2;
+    }
+    .braceSpan svg{ width:100%; height:100%; display:block; }
+    .braceSpan path{
+      fill:none;stroke:var(--braceInk);
+      stroke-width:var(--braceW);
+      stroke-linecap:round;stroke-linejoin:round;
+    }
+    .labelTop, .labelBot{
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
+      pointer-events:auto;
+      z-index:3;
+    }
+    .labelTop{ top: -48px; }
+    .labelBot{ top: 35px; }
+    .qMark{
+      font-weight:1300;font-size:28px;color:#0b1220;line-height:1;
+      padding:0 6px;user-select:none;
+    }
+
+    /* Drag label bank */
+    .labelBank{display:flex;gap:10px;align-items:center;justify-content:flex-start;margin:0;flex-wrap:wrap;}
+    .chip{
+      display:inline-flex;align-items:center;justify-content:center;
+      padding:8px 12px;border-radius:999px;
+      border:2px solid rgba(15,23,42,.18);background:#fff;
+      font-weight:1100;font-size:14px;cursor:grab;user-select:none;
+      box-shadow:0 8px 18px rgba(2,6,23,.08);
+      max-width:min(360px, 100%);
+    }
+    .chip:active{cursor:grabbing;}
+    .chip.placed{opacity:.55;cursor:not-allowed;}
+
+    .slot{
+      width:100%;
+      height:44px;border-radius:14px;
+      border:3px dashed rgba(15,23,42,.26);
+      background:rgba(255,255,255,.7);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:1100;font-size:14px;color:rgba(15,23,42,.55);
+      padding:0 10px;
+    }
+    .slot.filled{border-style:solid;color:var(--ink);background:#fff;}
+    .slot.over{outline:3px solid rgba(14,165,233,.25);outline-offset:2px;}
+    .slot .chipInSlot{
+      padding:7px 12px;border-radius:999px;
+      border:2px solid rgba(15,23,42,.18);background:#fff;
+      font-weight:1100;font-size:14px;cursor:pointer;user-select:none;
+      max-width:100%;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
+
+    /* ========== COMPARE MODEL ========== */
+    .diffGrid{
+      display:grid;
+      grid-template-columns: 160px 1fr;
+      gap:12px 14px;
+      align-items:center;
+      width:100%;
+    }
+    .barsCol{width:100%;position:relative;}
+    .barFull{
+      height:var(--barH);
+      border:var(--barStroke) solid rgba(15,23,42,.18);
+      border-radius:14px;background:var(--pink);position:relative;
+    }
+    .barCompare{
+      height:var(--barH);
+      border-radius:14px;
+      position:relative;
+      display:grid;
+      grid-template-columns: 80% 20%;
+      gap:0;
+    }
+    .barCompare .left{
+      background:var(--blue);
+      border:var(--barStroke) solid rgba(15,23,42,.18);
+      border-right:0;
+      border-top-left-radius:14px;border-bottom-left-radius:14px;
+    }
+    .barCompare .right{background:transparent;border:0;}
+    .dots{position:absolute;top:-4px;bottom:-4px;left:0;right:0;pointer-events:none;}
+    .dotLine{
+      position:absolute;top:8px;bottom:8px;width:0;
+      border-left:5px dotted rgba(11,18,32,.85);
+      opacity:.95;
+    }
+    .dotLine.boundary{ left:80%; }
+    .dotLine.end{ left:100%; transform:translateX(-2px); }
+
+    .diffTopBrace{ left:var(--cmpLeft); right:var(--cmpRightPad); top:60px; }
+    .diffBottom{
+      position:absolute;
+      left: var(--cmpLeft);
+      right: var(--cmpRightPad);
+      bottom: -20px;
+      height:var(--braceH);
+      display:grid;
+      grid-template-columns: 80% 20%;
+      gap:0;
+      overflow:visible;
+    }
+    .diffBottom .bPart{ position:relative; overflow:visible; }
+    .diffBottom .bPart .braceSpan{ left:0; right:0; top:0; }
+
+    /* ========== PART-WHOLE MODEL (Brace convention from your reference) ========== */
+    .pwArea{
+      width:100%;
+      position:relative;
+      padding-top: 6px;
+    }
+
+    /* total brace on TOP always */
+    .pwTopBrace{
+      left:0;
+      width:100%;
+      top: 0px;
+      height:var(--braceH);
+    }
+
+    /* ? + total label beside the pointy part (shiftable) */
+    .pwTopLabelRow{
+      position:absolute;
+      left: calc(50% + var(--pwTopShiftRight));
+      top: calc(-1 * var(--pwTopUp));
+      transform: translateX(-50%);
+      display:flex;
+      align-items:center;
+      gap:10px;
+      pointer-events:auto;
+      z-index:4;
+    }
+    .pwTopLabelRow .qMark{ font-size:28px; padding:0; }
+    .pwTotalSlot{
+      width:min(420px, 100%);
+      height:44px;
+    }
+
+    /* bar itself */
+    .pwBar{
+      width:100%;
+      height:var(--barH);
+      border:var(--barStroke) solid var(--barStrokeInk);
+      background:#fff;
+
+      display:flex;
+      position:relative;
+      border-radius:0;
+      overflow:hidden;
+
+      margin-top: 18px;
+    }
+    .pwLeftSeg, .pwRightSeg{height:100%;}
+    .pwLeftSeg{ background:var(--sumLeft); }
+    .pwRightSeg{ background:var(--sumRight); }
+
+    .pwDivider{
+      position:absolute;
+      top:calc(-1 * var(--barStroke));
+      bottom:calc(-1 * var(--barStroke));
+      width:0;
+      border-left:var(--barStroke) solid var(--barStrokeInk);
+      pointer-events:none;
+      left:50%;
+    }
+
+    /* labels dropped directly ON the parts */
+    .pwPartDrop{
+      position:absolute;
+      top: 6px;
+      bottom: 6px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:0 10px;
+      pointer-events:auto;
+      z-index:3;
+    }
+    .pwPartDrop.left{ left: 0; }
+    .pwPartDrop.right{ right: 0; }
+    .pwPartDropInner{
+      width:100%;
+      max-width: 96%;
+      height:40px;
+      border-radius:14px;
+      border:3px dashed rgba(15,23,42,.26);
+      background:rgba(255,255,255,.65);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:1100;
+      font-size:14px;
+      color:rgba(15,23,42,.55);
+      overflow:hidden;
+    }
+    .pwPartDropInner.filled{
+      border-style:solid;
+      background:#fff;
+      color:var(--ink);
+    }
+    .pwPartDropInner.over{
+      outline:3px solid rgba(14,165,233,.25);
+      outline-offset:2px;
+    }
+    .pwPartDropInner .chipInSlot{
+      padding:7px 12px;border-radius:999px;
+      border:2px solid rgba(15,23,42,.18);background:#fff;
+      font-weight:1100;font-size:14px;cursor:pointer;user-select:none;
+      max-width:100%;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
+
+    /* bottom braces (NO overlap): left part + right part braces BELOW bar */
+    .pwBottomBraces{
+      position:absolute;
+      left:0;
+      right:0;
+      top: calc(18px + var(--barH) + 8px);
+      height: var(--braceH);
+      display:flex;
+      pointer-events:none;
+      z-index:2;
+    }
+    .pwBottomBracePart{
+      position:relative;
+      height:var(--braceH);
+      pointer-events:none;
+    }
+    .pwBottomBracePart .braceSpan{
+      position:absolute;
+      left:0; right:0; top:0;
+      height:var(--braceH);
+    }
+    .pwBottomValue{
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
+      top: 30px;
+      pointer-events:auto;
+      z-index:3;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      white-space:nowrap;
+    }
+
+    /* model check row (short) */
+    .modelCheckRow{
+      display:flex;align-items:center;justify-content:space-between;
+      gap:8px;flex-wrap:wrap;
+      border-radius:14px;
+      border:1px solid rgba(15,23,42,.10);
+      background:rgba(255,255,255,.72);
+      padding:6px 10px;
+      min-height:auto;
+    }
+    .modelCheckRow .left{
+      display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-weight:1000;
+    }
+    .statusPill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:6px 10px;border-radius:999px;
+      border:1px solid rgba(15,23,42,.14);
+      background:#fff;
+      font-weight:1100;font-size:12px;color:rgba(15,23,42,.78);
+    }
+    .statusPill.good{ border-color:rgba(22,163,74,.35); background:#ecfdf3; }
+    .statusPill.bad{ border-color:rgba(225,29,72,.30); background:#fff1f2; }
+
+    /* Operators */
+    .mini{ font-size:11px; color:var(--muted); font-weight:900; }
+    .opBank{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0;}
+    .opChip{
+      width:44px;height:44px;border-radius:999px;border:2px solid rgba(15,23,42,.18);
+      background:#fff;font-weight:1300;font-size:22px;cursor:grab;user-select:none;
+      box-shadow:0 8px 18px rgba(2,6,23,.08);
+      display:flex;align-items:center;justify-content:center;
+    }
+    .opChip:active{cursor:grabbing;}
+    .eq{
+      padding:6px 0;
+      background:transparent;border:0;
+      display:flex;align-items:center;justify-content:center;
+      gap:10px;flex-wrap:nowrap;white-space:nowrap;
+      font-size:16px;font-weight:1200;
+      overflow:visible;position:relative;
+    }
+    .eq.locked::after{
+      content:"Solve the model first (press Check Model).";
+      position:absolute;inset:0;
+      display:flex;align-items:center;justify-content:center;text-align:center;
+      padding:12px;background:rgba(255,255,255,.82);backdrop-filter: blur(4px);
+      font-weight:1200;color:rgba(15,23,42,.72);
+    }
+    .opSlot{
+      width:40px;height:40px;border-radius:999px;
+      border:3px dashed rgba(15,23,42,.26);
+      background:rgba(255,255,255,.75);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:1400;font-size:20px;color:rgba(15,23,42,.55);
+      box-shadow:0 8px 18px rgba(2,6,23,.08);
+      flex:0 0 auto;cursor:pointer;
+    }
+    .opSlot.filled{border-style:solid;color:var(--ink);background:#fff;}
+    .opSlot.over{outline:3px solid rgba(14,165,233,.25);outline-offset:2px;}
+
+    .result{
+      font-weight:1100;font-size:16px;
+      display:flex;align-items:center;gap:10px;
+      white-space:nowrap;flex-wrap:wrap;
+    }
+    .result.locked{ position:relative; opacity:.9; }
+    .result.locked::after{
+      content:"";position:absolute;inset:-6px -6px -6px -6px;
+      background:rgba(255,255,255,.6);border-radius:16px;
+    }
+
+    /* ✅ Answer row layout: answer blank + prominent check button */
+    .answerRow{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .answerRow .answerLabel{
+      font-weight:1200;
+    }
+
+    .msg{
+      padding:10px 12px;border-radius:16px;
+      border:1px solid rgba(15,23,42,.10);
+      background:rgba(255,255,255,.72);
+      font-weight:1000;font-size:13px;
+      align-self:stretch;
+      display:none;
+      white-space:pre-line; /* ✅ allow quiz completion message on new line */
+    }
+    .msg.good{ border-color:rgba(22,163,74,.35); background:#ecfdf3; display:block; }
+    .msg.bad{ border-color:rgba(225,29,72,.30); background:#fff1f2; display:block; }
+
+    /* RIGHT PANEL: Working Space ONLY */
+    /* RIGHT PANEL: Working Space ONLY — make canvas fill ALL remaining height */
+    #workPanelBd{
+      padding:0;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+      height:100%;
+    }
+
+    .workCard{
+      flex:1;
+      margin:0;
+      border:0;
+      border-radius:0;
+      background:transparent;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+    }
+
+    .workHdr{
+      padding:10px 12px;
+      border-bottom:1px solid rgba(15,23,42,.08);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex:0 0 auto;
+      background:rgba(255,255,255,.55);
+    }
+
+    /* ✅ ZERO padding so there is no “dead” area */
+    .workCanvasWrap{
+      flex:1;
+      min-height:0;
+      display:flex;
+      padding:0;
+      height:100%;
+    }
+
+    /* ✅ canvas MUST stretch (flex) */
+    canvas#workCanvas{
+      flex:1;
+      width:100%;
+      height:100%;
+      min-height:100%;
+      border-radius:18px;
+      border:1px solid rgba(15,23,42,.12);
+      background:#ffffff;
+      display:block;
+      touch-action:none;
+    }
+
+    .workBtns{
+      padding:0 12px 12px 12px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      flex:0 0 auto;
+    }
+
+    .footer{
+      padding:7px 12px;
+      border-top:1px solid rgba(15,23,42,.08);
+      display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+      background:rgba(255,255,255,.65);
+      flex:0 0 auto;
+    }
+    .credit{ font-size:12px; color:rgba(15,23,42,.65); font-weight:900; }
+
+    #xapiBase{ display:none; }
+
+    @media (max-width: 1000px){
+      .main{grid-template-columns:1fr;}
+    }
+    @media (max-width: 520px){
+      :root{
+        --blankMin: 62px;
+        --blankMax: 108px;
+        --barH: 48px;
+        --braceH: 24px;
+        --cmpLeft: 154px;
+        --pwModelDown: 46px;
+        --pwTopShiftRight: 42px;
+        --pwTopUp: 48px;
+      }
+      .modelWrap{ min-height:300px; }
+      .question{ font-size:18px; }
+      .diffGrid{ grid-template-columns: 140px 1fr; }
+      .slot{ height:40px; font-size:13px; }
+      .opChip{ width:42px; height:42px; font-size:20px; }
+      .opSlot{ width:38px; height:38px; }
+      .btn.checkBig{ width:100%; justify-content:center; }
+    }
+
+    /* ✅ Confetti overlay canvas */
+    #confettiCanvas{
+      position:fixed;
+      inset:0;
+      width:100vw;
+      height:100vh;
+      pointer-events:none;
+      z-index:9999;
+    }
+  </style>
+</head>
+
+<body>
+<div class="wrap">
+  <div class="app">
+
+    <div class="topbar">
+      <div class="title">
+        <h1>Word Problems — Choose the Right Model</h1>
+        <div class="sub">Question → choose model → drag labels + fill numbers → Check Model → solve equation + final answer.</div>
+      </div>
+
+      <div class="controls">
+        <div class="seg" role="tablist" aria-label="Question family">
+          <button id="modeCompare" class="active" type="button">Compare</button>
+          <button id="modePartWhole" type="button">Part-Whole</button>
+          <button id="modeRand" type="button">Quiz</button>
+        </div>
+
+        <button class="btn" id="btnNew" type="button">New Question</button>
+      </div>
+    </div>
+
+    <div class="main" id="mainGrid">
+
+      <!-- LEFT -->
+      <div class="card">
+        <div class="hd">
+          <div class="h">Question</div>
+          <div class="badge">
+            <span class="dot" id="scoreDot"></span>
+            <span>Score: <span id="scoreNow">0</span>/<span id="scoreMax">1</span></span>
+          </div>
+        </div>
+
+        <div class="bd">
+
+          <div class="qBox">
+            <div class="questionTitle">Question</div>
+            <p class="question" id="qText"></p>
+            <div class="note" id="scaleNote">Note: Models are not drawn to scale.</div>
+          </div>
+
+          <!-- Choose model gate -->
+          <div class="gate" id="gateBox">
+            <div class="hint" id="gateHint">Choose the correct model to continue.</div>
+            <div class="gateBtns">
+              <button class="choiceBtn" id="btnChooseCompare" type="button">Compare model</button>
+              <button class="choiceBtn" id="btnChoosePartWhole" type="button">Part-Whole model</button>
+            </div>
+          </div>
+
+          <!-- Model -->
+          <div class="modelWrap" id="modelWrap">
+            <div class="modelHiddenOverlay" id="modelHiddenOverlay">
+              <div class="bigText">
+                Choose the correct model above.<br>
+                If you choose wrongly, you will hear a wrong sound and must choose again.
+              </div>
+            </div>
+
+            <div class="modelStage" id="modelStage">
+
+              <!-- COMPARE MODEL -->
+              <div id="modelCompare" style="display:none;">
+                <div class="modelRow">
+
+                  <!-- LEFT: Helping Words -->
+                  <div class="helperPanel" aria-label="Helping words panel">
+                    <div class="helperTitle">
+                      🧩 Helping words <span class="sub">Drag the words into the boxes on the right.</span>
+                    </div>
+                    <div class="labelBank" id="compareLabelBank"></div>
+                  </div>
+
+                  <!-- RIGHT: Model -->
+                  <div class="modelCanvas">
+
+                    <div class="braceSpan diffTopBrace" aria-hidden="true">
+                      <svg viewBox="0 0 100 24" preserveAspectRatio="none">
+                        <path d="M4 18 C4 10 6 6 12 6 L45 6 C47 6 48.5 6 50 2 C51.5 6 53 6 55 6 L88 6 C94 6 96 10 96 18"/>
+                      </svg>
+                      <div class="labelTop" id="cmpTopValue"></div>
+                    </div>
+
+                    <div class="diffGrid">
+                      <div class="slot" id="cmpSlotTop" data-slot="top">drop label</div>
+                      <div class="barsCol">
+                        <div class="barFull"></div>
+                        <div class="dots" aria-hidden="true">
+                          <div class="dotLine boundary"></div>
+                          <div class="dotLine end"></div>
+                        </div>
+                      </div>
+
+                      <div class="slot" id="cmpSlotBottom" data-slot="bottom">drop label</div>
+                      <div class="barsCol">
+                        <div class="barCompare">
+                          <div class="left"></div>
+                          <div class="right"></div>
+                        </div>
+                        <div class="dots" aria-hidden="true">
+                          <div class="dotLine boundary"></div>
+                          <div class="dotLine end"></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="diffBottom">
+                      <div class="bPart">
+                        <div class="braceSpan" aria-hidden="true">
+                          <svg viewBox="0 0 100 24" preserveAspectRatio="none">
+                            <path d="M4 6 C4 14 6 18 12 18 L45 18 C47 18 48.5 18 50 22 C51.5 18 53 18 55 18 L88 18 C94 18 96 14 96 6"/>
+                          </svg>
+                          <div class="labelBot" id="cmpLeftValue"></div>
+                        </div>
+                      </div>
+                      <div class="bPart">
+                        <div class="braceSpan" aria-hidden="true">
+                          <svg viewBox="0 0 100 24" preserveAspectRatio="none">
+                            <path d="M4 6 C4 14 6 18 12 18 L45 18 C47 18 48.5 18 50 22 C51.5 18 53 18 55 18 L88 18 C94 18 96 14 96 6"/>
+                          </svg>
+                          <div class="labelBot" id="cmpRightValue"></div>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+
+              <!-- PART-WHOLE MODEL -->
+              <div id="modelPartWhole" style="display:none;">
+                <div class="modelRow">
+
+                  <!-- LEFT: Helping Words -->
+                  <div class="helperPanel" aria-label="Helping words panel">
+                    <div class="helperTitle">
+                      🧩 Helping words <span class="sub">Drag the words onto the parts and total.</span>
+                    </div>
+                    <div class="labelBank" id="pwLabelBank"></div>
+                  </div>
+
+                  <!-- RIGHT: Model -->
+                  <div class="modelCanvas">
+                    <div class="pwArea" id="pwArea">
+
+                      <!-- ✅ Total brace TOP (always) -->
+                      <div class="braceSpan pwTopBrace" aria-hidden="true">
+                        <svg viewBox="0 0 100 24" preserveAspectRatio="none">
+                          <path d="M4 18 C4 10 6 6 12 6 L45 6 C47 6 48.5 6 50 2 C51.5 6 53 6 55 6 L88 6 C94 6 96 10 96 18"/>
+                        </svg>
+                      </div>
+
+                      <!-- ? + Total label beside pointy part -->
+                      <div class="pwTopLabelRow" id="pwTopLabelRow">
+                        <div id="pwTopUnknown"></div>
+                        <div class="slot pwTotalSlot" id="pwSlotTotal" data-slot="total">drop total label</div>
+                      </div>
+
+                      <!-- Bar -->
+                      <div class="pwBar" id="pwBar" aria-label="part-whole bar">
+                        <div class="pwLeftSeg" id="pwLeftSeg"></div>
+                        <div class="pwRightSeg" id="pwRightSeg"></div>
+                        <div class="pwDivider" id="pwDivider"></div>
+
+                        <!-- drop labels ON parts -->
+                        <div class="pwPartDrop left" id="pwPartDropLeftWrap">
+                          <div class="pwPartDropInner" id="pwSlotLeft" data-slot="left">drop label</div>
+                        </div>
+                        <div class="pwPartDrop right" id="pwPartDropRightWrap">
+                          <div class="pwPartDropInner" id="pwSlotRight" data-slot="right">drop label</div>
+                        </div>
+                      </div>
+
+                      <!-- ✅ Bottom braces (below bar, no overlap) -->
+                      <div class="pwBottomBraces" id="pwBottomBraces">
+                        <div class="pwBottomBracePart" id="pwBottomLeft">
+                          <div class="braceSpan" aria-hidden="true">
+                            <svg viewBox="0 0 100 24" preserveAspectRatio="none">
+                              <path d="M4 6 C4 14 6 18 12 18 L45 18 C47 18 48.5 18 50 22 C51.5 18 53 18 55 18 L88 18 C94 18 96 14 96 6"/>
+                            </svg>
+                          </div>
+                          <div class="pwBottomValue" id="pwLeftValue"></div>
+                        </div>
+                        <div class="pwBottomBracePart" id="pwBottomRight">
+                          <div class="braceSpan" aria-hidden="true">
+                            <svg viewBox="0 0 100 24" preserveAspectRatio="none">
+                              <path d="M4 6 C4 14 6 18 12 18 L45 18 C47 18 48.5 18 50 22 C51.5 18 53 18 55 18 L88 18 C94 6 96 14 96 6"/>
+                            </svg>
+                          </div>
+                          <div class="pwBottomValue" id="pwRightValue"></div>
+                        </div>
+                      </div>
+
+                      <!-- (Hidden helper; used for check) -->
+                      <div style="display:none">
+                        <span id="pwTotalValue"></span>
+                      </div>
+
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Check Model gate before equation -->
+          <div class="modelCheckRow">
+            <div class="left">
+              <div class="statusPill" id="modelStatus">Step: Choose model</div>
+              <span class="mini">Press <b style="color:var(--ink)">Check Model</b> before solving equation.</span>
+            </div>
+            <div>
+              <button class="btn primary" id="btnCheckModel" type="button">Check Model</button>
+            </div>
+          </div>
+
+          <!-- Operator bank -->
+          <div class="opBank" aria-label="Operator bank" id="opBank">
+            <div class="opChip" draggable="true" data-op="+">+</div>
+            <div class="opChip" draggable="true" data-op="-">−</div>
+            <div class="opChip" draggable="true" data-op="×">×</div>
+            <div class="opChip" draggable="true" data-op="÷">÷</div>
+            <div class="opChip" draggable="true" data-op="=">=</div>
+            <span class="mini">Drag operators into the circles in the equation.</span>
+          </div>
+
+          <div class="eq locked" id="eqLine"></div>
+
+          <!-- ✅ Answer + prominent check button lives HERE (next to answer box) -->
+          <div class="result locked" id="finalLine"></div>
+
+          <div id="msg" class="msg"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Working Space ALWAYS -->
+      <div class="card" id="toolsCard">
+        <div class="hd">
+          <div class="h">Working Space</div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <div class="mini">Use finger / mouse / stylus</div>
+            <button class="btn" id="btnWorkClearTop" type="button">Clear Working</button>
+          </div>
+        </div>
+
+        <div class="bd" id="workPanelBd">
+          <div class="workCard">
+            <div class="workCanvasWrap">
+              <canvas id="workCanvas"></canvas>
+            </div>
+            <div class="workBtns" style="display:none;"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer">
+      <div class="credit">Designed by Lim Kim Sze © 2026</div>
+      <div class="mini">Compare + Part-Whole + Quiz</div>
+    </div>
+
+    <!-- Hidden xAPI base -->
+    <div id="xapiBase">
+      <input id="score-input" type="text" value="0">
+      <input id="feedback-input" type="text" value="">
+      <div id="result"></div>
+      <div id="getState"></div>
+      <div id="questionId"></div>
+      <div id="userId"></div>
+      <div id="cookieId"></div>
+    </div>
+
+  </div>
+</div>
+
+<canvas id="confettiCanvas"></canvas>
+
+<script src="xapiwrapper.min.js"></script>
+<script src="index.js"></script>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ===========================
+     SOUND KIT (auto-unlock on first pointer)
+  ============================ */
+  const SOUND_VER = "20260128a";
+  const sounds = {
+    correct: new Audio("./correct.mp3?v=" + SOUND_VER),
+    wrong:   new Audio("./wrong.mp3?v=" + SOUND_VER),
+    clock:   new Audio("./clock.mp3?v=" + SOUND_VER),
+  };
+  Object.values(sounds).forEach(a=>{ a.preload="auto"; a.playsInline=true; });
+
+  let soundUnlocked=false;
+  async function unlockSound(){
+    try{
+      for(const a of Object.values(sounds)){
+        a.muted=true; await a.play();
+        a.pause(); a.currentTime=0;
+        a.muted=false;
+      }
+      soundUnlocked=true;
+    }catch(e){}
+  }
+  function playSound(name){
+    try{
+      const a=sounds[name]; if(!a) return;
+      if(!soundUnlocked) unlockSound();
+      a.currentTime=0; a.play().catch(()=>{});
+    }catch(e){}
+  }
+  window.addEventListener("pointerdown", ()=>{ if(!soundUnlocked) unlockSound(); }, {once:true, passive:true});
+
+  /* ===========================
+     QUESTION BANK
+  ============================ */
+  const BUY_ITEMS = [
+    "water bottle","pencil case","storybook","lunch box","umbrella",
+    "sticker book","toy car","towel","cap","lamp"
+  ];
+
+  function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+  function pick(arr){ return arr[randInt(0, arr.length-1)]; }
+  function money(n){ return Number(n).toFixed(2); }
+
+  function shuffle(arr){
+    for(let i=arr.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [arr[i],arr[j]]=[arr[j],arr[i]];
+    }
+    return arr;
+  }
+
+  function buildQuizSet(){
+    // exactly 5 compare + 5 part-whole, then shuffle
+    const set = [];
+    for(let i=0;i<5;i++) set.push(genCompare());
+    for(let i=0;i<5;i++) set.push(genPartWhole());
+    return shuffle(set);
+  }
+
+  function randMoney(minDollars, maxDollars){
+    const cents = randInt(0,19)*5;
+    const dollars = randInt(minDollars, maxDollars);
+    return dollars + cents/100;
+  }
+
+  // ✅ NEW: cents-bounded money generator (always multiple of 5 cents)
+  function randMoneyCents(minCents, maxCents){
+    const lo = Math.ceil(minCents/5);
+    const hi = Math.floor(maxCents/5);
+    const k = randInt(lo, hi);
+    return (k*5)/100;
+  }
+
+  // Part-Whole generator
+  function genPartWhole(){
+    const type = pick(["total2", "change", "left", "saved", "priceAfterLess", "initialMoney"]);
+
+    if(type==="total2"){
+      const a = pick(BUY_ITEMS);
+      let b = pick(BUY_ITEMS.filter(x=>x!==a));
+      const x = randMoney(8, 58);
+      const y = randMoney(5, 38);
+      const total = x+y;
+      return {
+        kind:"partwhole",
+        unknown:"total",
+        parts:[`price of ${a}`,`price of ${b}`],
+        totalLabel:"spent in all",
+        question:
+          `Zod bought a ${a} for $${money(x)}.<br>`+
+          `Drax bought a ${b} for $${money(y)}.<br>`+
+          `How much did they spend in all?`,
+        values:{ part1:x, part2:y, total:total },
+        equation:{ left:x, op:"+", right:y, res:total },
+        finalSentence:`They spent $${money(total)} in all.`
+      };
+    }
+
+    // ✅ FIXED: change (guarantee price <= paid)
+    if(type==="change"){
+      const item = pick(BUY_ITEMS);
+      const paid = pick([50,100]);                 // dollars
+      const paidC = paid * 100;                    // cents
+      const price = randMoneyCents(1200, paidC-5); // $12.00 .. (paid - $0.05)
+      const change = (paidC - Math.round(price*100)) / 100;
+
+      return {
+        kind:"partwhole",
+        unknown:"part2",
+        parts:[`price of ${item}`,"change"],
+        totalLabel:`amount paid`,
+        question:
+          `A ${item} costs $${money(price)}.<br>`+
+          `A shopper gave the cashier a $${money(paid)} note.<br>`+
+          `How much change should the shopper get?`,
+        values:{ part1:price, part2:change, total:paid },
+        equation:{ left:paid, op:"−", right:price, res:change },
+        finalSentence:`The change is $${money(change)}.`
+      };
+    }
+
+    if(type==="left"){
+      const item = pick(BUY_ITEMS);
+      const had = randMoney(15, 60);
+      const spent = randMoney(5, Math.max(6, Math.floor(had-1)));
+      const left = had - spent;
+      return {
+        kind:"partwhole",
+        unknown:"part2",
+        parts:[`price of ${item}`,"amount left"],
+        totalLabel:"money at first",
+        question:
+          `A child had $${money(had)}.<br>`+
+          `The child bought a ${item} for $${money(spent)}.<br>`+
+          `How much money did the child have left?`,
+        values:{ part1:spent, part2:left, total:had },
+        equation:{ left:had, op:"−", right:spent, res:left },
+        finalSentence:`The child had $${money(left)} left.`
+      };
+    }
+
+    if(type==="saved"){
+      const original = randMoney(20, 90);
+      const paid = randMoney(10, Math.max(11, Math.floor(original-1)));
+      const saved = original - paid;
+      return {
+        kind:"partwhole",
+        unknown:"part2",
+        parts:["price paid","amount saved"],
+        totalLabel:"original price",
+        question:
+          `An item costs $${money(original)} before a sale.<br>`+
+          `During the sale, it was bought for $${money(paid)}.<br>`+
+          `How much was saved?`,
+        values:{ part1:paid, part2:saved, total:original },
+        equation:{ left:original, op:"−", right:paid, res:saved },
+        finalSentence:`The amount saved is $${money(saved)}.`
+      };
+    }
+
+    // ✅ FIXED: priceAfterLess (guarantee less < original)
+    if(type==="priceAfterLess"){
+      const original = randMoney(18, 95);
+      const origC = Math.round(original * 100);
+      const less = randMoneyCents(300, origC-5);   // $3.00 .. (original - $0.05)
+      const final = (origC - Math.round(less*100)) / 100;
+      const item = pick(BUY_ITEMS);
+      return {
+        kind:"partwhole",
+        unknown:"part1",
+        parts:["price paid","amount less"],
+        totalLabel:"original price",
+        question:
+          `A ${item} costs $${money(original)}.<br>`+
+          `During a sale, the buyer paid $${money(less)} less than the original price.<br>`+
+          `How much did the buyer pay in the end?`,
+        values:{ part1:final, part2:less, total:original },
+        equation:{ left:original, op:"−", right:less, res:final },
+        finalSentence:`The buyer paid $${money(final)} for the ${item}.`
+      };
+    }
+
+    // initialMoney
+    const spent = randMoney(8, 55);
+    const left = randMoney(2, 25);
+    const start = spent + left;
+    return {
+      kind:"partwhole",
+      unknown:"total",
+      parts:["money spent","money left"],
+      totalLabel:"money at first",
+      question:
+        `Lenz bought a box of snacks for $${money(spent)}.<br>`+
+        `After buying it, he had $${money(left)} left.<br>`+
+        `How much money did Lenz have at first?`,
+      values:{ part1:spent, part2:left, total:start },
+      equation:{ left:spent, op:"+", right:left, res:start },
+      finalSentence:`Lenz had $${money(start)} at first.`
+    };
+  }
+
+  // Compare generator
+  function genCompare(){
+    const type = pick(["moreFindB","lessFindB","howMuchMore","lessSecond","moreWeekend"]);
+
+    if(type==="moreFindB"){
+      const a = "water bottle";
+      const b = "thermos";
+      const base = randMoney(8, 35);
+      const diff = randMoney(3, 18);
+      const bigger = base + diff;
+      return {
+        kind:"compare",
+        cmpType:"findLarger",
+        largerName:b,
+        smallerName:a,
+        question:
+          `A ${a} costs $${money(base)}.<br>`+
+          `A ${b} costs $${money(diff)} more than the ${a}.<br>`+
+          `How much does the ${b} cost?`,
+        values:{ smaller:base, difference:diff, larger:bigger },
+        equation:{ left:base, op:"+", right:diff, res:bigger },
+        finalSentence:`The ${b} costs $${money(bigger)}.`
+      };
+    }
+
+    if(type==="lessFindB"){
+      const a = "school bag";
+      const b = "pencil case";
+      const larger = randMoney(30, 85);
+      const diff = randMoney(5, 25);
+      const smaller = larger - diff;
+      return {
+        kind:"compare",
+        cmpType:"findSmaller",
+        largerName:a,
+        smallerName:b,
+        question:
+          `A ${a} costs $${money(larger)}.<br>`+
+          `A ${b} costs $${money(diff)} less than the ${a}.<br>`+
+          `How much does the ${b} cost?`,
+        values:{ smaller:smaller, difference:diff, larger:larger },
+        equation:{ left:larger, op:"−", right:diff, res:smaller },
+        finalSentence:`The ${b} costs $${money(smaller)}.`
+      };
+    }
+
+    if(type==="howMuchMore"){
+      const a = "March savings";
+      const b = "April savings";
+      const x = randMoney(30, 90);
+      const y = randMoney(20, 80);
+      const larger = Math.max(x,y);
+      const smaller = Math.min(x,y);
+      const diff = larger - smaller;
+      const largerName = (x>=y) ? a : b;
+      const smallerName = (x>=y) ? b : a;
+      return {
+        kind:"compare",
+        cmpType:"findDifference",
+        largerName,
+        smallerName,
+        question:
+          `Yondu saved $${money(x)} in March.<br>`+
+          `Then, he saved $${money(y)} in April.<br>`+
+          `How much more did Yondu save in the month of higher saving?`,
+        values:{ smaller:smaller, difference:diff, larger:larger },
+        equation:{ left:larger, op:"−", right:smaller, res:diff },
+        finalSentence:`Yondu saved $${money(diff)} more in the month of higher saving.`
+      };
+    }
+
+    if(type==="lessSecond"){
+      const a = "phone bill (May)";
+      const b = "phone bill (June)";
+      const may = randMoney(40, 120);
+      const less = randMoney(5, 35);
+      const june = may - less;
+      return {
+        kind:"compare",
+        cmpType:"findSmaller",
+        largerName:a,
+        smallerName:b,
+        question:
+          `Father paid $${money(may)} for his phone bill in May.<br>`+
+          `He paid $${money(less)} less for his phone bill in June than in May.<br>`+
+          `How much was his phone bill in June?`,
+        values:{ smaller:june, difference:less, larger:may },
+        equation:{ left:may, op:"−", right:less, res:june },
+        finalSentence:`His phone bill in June was $${money(june)}.`
+      };
+    }
+
+    const weekday = randMoney(6, 14);
+    const more = randMoney(1, 6);
+    const weekend = weekday + more;
+    return {
+      kind:"compare",
+      cmpType:"findLarger",
+      largerName:"Saturday movie ticket",
+      smallerName:"weekday movie ticket",
+      question:
+        `A movie ticket costs $${money(weekday)} on weekdays.<br>`+
+        `On weekends, it costs $${money(more)} more than on weekdays.<br>`+
+        `How much is the price of a movie ticket on Saturday?`,
+      values:{ smaller:weekday, difference:more, larger:weekend },
+      equation:{ left:weekday, op:"+", right:more, res:weekend },
+      finalSentence:`A movie ticket on Saturday costs $${money(weekend)}.`
+    };
+  }
+
+  /* ===========================
+     STATE
+  ============================ */
+  const state = {
+    family:"compare",
+    currentKind:"compare",
+    problem:null,
+
+    quiz:{
+      active:false,
+      idx:0,
+      total:10,
+      score:0,
+      set:[],
+      marked:false,
+      completedShown:false
+    },
+
+    gate:{ chosen:null, passed:false },
+    modelChecked:false,
+
+    labels:{
+      cmpTop:null,
+      cmpBottom:null,
+      pwLeft:null,
+      pwRight:null,
+      pwTotal:null
+    },
+
+    pwMap:{
+      leftLabel:null,
+      rightLabel:null,
+      leftVal:0,
+      rightVal:0,
+      totalVal:0,
+      unknown:"total"
+    },
+
+    ops:{ op1:null, eq:null }
+  };
+
+  /* ===========================
+     ELEMENTS
+  ============================ */
+  const modeCompare=document.getElementById("modeCompare");
+  const modePartWhole=document.getElementById("modePartWhole");
+  const modeRand=document.getElementById("modeRand");
+
+  const qText=document.getElementById("qText");
+  const eqLine=document.getElementById("eqLine");
+  const finalLine=document.getElementById("finalLine");
+  const msg=document.getElementById("msg");
+
+  const modelHiddenOverlay=document.getElementById("modelHiddenOverlay");
+  const modelCompare=document.getElementById("modelCompare");
+  const modelPartWhole=document.getElementById("modelPartWhole");
+
+  const compareLabelBank=document.getElementById("compareLabelBank");
+  const pwLabelBank=document.getElementById("pwLabelBank");
+
+  // Compare slots
+  const cmpSlotTop=document.getElementById("cmpSlotTop");
+  const cmpSlotBottom=document.getElementById("cmpSlotBottom");
+  const cmpTopValue=document.getElementById("cmpTopValue");
+  const cmpLeftValue=document.getElementById("cmpLeftValue");
+  const cmpRightValue=document.getElementById("cmpRightValue");
+
+  // Part-whole slots
+  const pwSlotLeft=document.getElementById("pwSlotLeft");
+  const pwSlotRight=document.getElementById("pwSlotRight");
+  const pwSlotTotal=document.getElementById("pwSlotTotal");
+
+  const pwLeftSeg=document.getElementById("pwLeftSeg");
+  const pwRightSeg=document.getElementById("pwRightSeg");
+  const pwDivider=document.getElementById("pwDivider");
+  const pwBottomLeft=document.getElementById("pwBottomLeft");
+  const pwBottomRight=document.getElementById("pwBottomRight");
+  const pwLeftValue=document.getElementById("pwLeftValue");
+  const pwRightValue=document.getElementById("pwRightValue");
+  const pwTopUnknown=document.getElementById("pwTopUnknown");
+
+  const btnChooseCompare=document.getElementById("btnChooseCompare");
+  const btnChoosePartWhole=document.getElementById("btnChoosePartWhole");
+  const gateHint=document.getElementById("gateHint");
+
+  const modelStatus=document.getElementById("modelStatus");
+  const btnCheckModel=document.getElementById("btnCheckModel");
+
+  const scoreDot=document.getElementById("scoreDot");
+  const scoreNow=document.getElementById("scoreNow");
+  const scoreMax=document.getElementById("scoreMax");
+
+  /* ===========================
+     CONFETTI
+  ============================ */
+  const confetti = { canvas:null, ctx:null, w:0, h:0, raf:0, until:0, parts:[] };
+
+  function confettiResize(){
+    if(!confetti.canvas) return;
+    const dpr = Math.max(1, Math.min(2, window.devicePixelRatio||1));
+    confetti.w = Math.floor(window.innerWidth * dpr);
+    confetti.h = Math.floor(window.innerHeight * dpr);
+    confetti.canvas.width = confetti.w;
+    confetti.canvas.height = confetti.h;
+    confetti.canvas.style.width = "100vw";
+    confetti.canvas.style.height = "100vh";
+    confetti.ctx.setTransform(1,0,0,1,0,0);
+  }
+  function confettiInit(){
+    confetti.canvas = document.getElementById("confettiCanvas");
+    if(!confetti.canvas) return;
+    confetti.ctx = confetti.canvas.getContext("2d");
+    confettiResize();
+    window.addEventListener("resize", confettiResize);
+  }
+  function fireConfetti(durationMs=1600){
+    if(!confetti.canvas || !confetti.ctx) return;
+    const now = performance.now();
+    confetti.until = now + durationMs;
+
+    const N = 160;
+    for(let i=0;i<N;i++){
+      const size = 6 + Math.random()*10;
+      confetti.parts.push({
+        x: confetti.w * (0.2 + Math.random()*0.6),
+        y: confetti.h * (0.05 + Math.random()*0.15),
+        vx: (Math.random()*2 - 1) * 6,
+        vy: (Math.random()*-1) * 6 - 2,
+        g: 0.18 + Math.random()*0.22,
+        r: size,
+        rot: Math.random()*Math.PI,
+        vr: (Math.random()*2 - 1) * 0.18,
+        life: 0
+      });
+    }
+
+    if(!confetti.raf){
+      const step = (t)=>{
+        const ctx = confetti.ctx;
+        ctx.clearRect(0,0,confetti.w,confetti.h);
+
+        confetti.parts = confetti.parts.filter(p => p.y < confetti.h + 200 && p.life < 260);
+        for(const p of confetti.parts){
+          p.vy += p.g;
+          p.x += p.vx;
+          p.y += p.vy;
+          p.rot += p.vr;
+          p.life += 1;
+
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          const hue = (p.life*7 + (p.x+p.y)*0.002) % 360;
+          ctx.fillStyle = `hsl(${hue} 95% 60%)`;
+          ctx.fillRect(-p.r/2, -p.r/4, p.r, p.r/2);
+          ctx.restore();
+        }
+
+        if(t < confetti.until || confetti.parts.length){
+          confetti.raf = requestAnimationFrame(step);
+        }else{
+          cancelAnimationFrame(confetti.raf);
+          confetti.raf = 0;
+          ctx.clearRect(0,0,confetti.w,confetti.h);
+        }
+      };
+      confetti.raf = requestAnimationFrame(step);
+    }
+  }
+
+  /* ===========================
+     HELPERS
+  ============================ */
+  function cents(n){ return Math.round(Number(n) * 100); }
+
+  function showMsg(text, kind){
+    msg.className = "msg " + (kind||"");
+    msg.textContent = text;
+  }
+  function hideMsg(){ msg.className="msg"; msg.textContent=""; }
+
+  function updateScoreBadge(){
+    if(state.family==="quiz"){
+      if(scoreMax) scoreMax.textContent = String(state.quiz.total);
+      scoreNow.textContent = String(state.quiz.score);
+    }else{
+      if(scoreMax) scoreMax.textContent = "1";
+      scoreNow.textContent = "0";
+    }
+  }
+
+  function setScore(ok){
+    if(state.family==="quiz"){
+      // award max 1 mark per question (no double counting)
+      if(ok && !state.quiz.marked){
+        state.quiz.score = Math.min(state.quiz.total, state.quiz.score + 1);
+        state.quiz.marked = true;
+      }
+      scoreDot.style.background = ok ? "#16a34a" : "#e11d48";
+      updateScoreBadge();
+      return;
+    }
+
+    scoreNow.textContent = ok ? "1" : "0";
+    scoreDot.style.background = ok ? "#16a34a" : "#e11d48";
+  }
+
+  function resetScore(){
+    scoreDot.style.background="#a3a3a3";
+    if(state.family==="quiz"){
+      updateScoreBadge();
+    }else{
+      scoreNow.textContent="0";
+      if(scoreMax) scoreMax.textContent="1";
+    }
+  }
+
+  function moneyBlank(id){
+    return `<span class="moneyBlank"><span class="dollarSign">$</span><span class="blank"><input id="${id}" inputmode="decimal" autocomplete="off" placeholder="0.00"/></span></span>`;
+  }
+  function readMoney(id){
+    const el=document.getElementById(id);
+    if(!el) return NaN;
+
+    const s = String(el.value||"").trim();
+    if(s==="") return NaN;
+
+    // ✅ Allow ONLY:
+    //  - whole dollars: 8
+    //  - 2 decimal places: 8.00
+    // ❌ NOT allowed: 8.0 , 8.000 , 8.1
+    if(!/^\d+(\.\d{2})?$/.test(s)) return NaN;
+
+    return Math.round(Number(s)*100)/100;
+  }
+
+  function requireAllMoney(ids){
+    for(const id of ids){
+      if(Number.isNaN(readMoney(id))) return false;
+    }
+    return true;
+  }
+
+  function opSlot(id){ return `<span class="opSlot" id="${id}" data-opslot="${id}">?</span>`; }
+  function resetOps(){ state.ops.op1=null; state.ops.eq=null; }
+
+  function expectedModelKind(){
+    return (state.currentKind==="compare") ? "compare" : "partwhole";
+  }
+  function lockEquation(lock){
+    eqLine.classList.toggle("locked", !!lock);
+    finalLine.classList.toggle("locked", !!lock);
+  }
+  function setModelOverlay(show){
+    modelHiddenOverlay.style.display = show ? "flex" : "none";
+  }
+  function updateModelStatus(){
+    if(!state.gate.passed){
+      modelStatus.className = "statusPill";
+      modelStatus.textContent = "Step: Choose model";
+      return;
+    }
+    if(!state.modelChecked){
+      modelStatus.className = "statusPill";
+      modelStatus.textContent = "Step: Fill model → Check Model";
+      return;
+    }
+    modelStatus.className = "statusPill good";
+    modelStatus.textContent = "Correct model ✅ Now solve.";
+  }
+
+  /* ===========================
+     DRAG/DROP LABELS
+  ============================ */
+  function clearSlotUI(slotEl){
+    if(!slotEl) return;
+    slotEl.classList.remove("filled");
+    slotEl.innerHTML = "drop label";
+    slotEl.style.color="rgba(15,23,42,.55)";
+  }
+  function renderSlot(slotEl, label){
+    if(!slotEl) return;
+    slotEl.classList.add("filled");
+    slotEl.style.color="#0f172a";
+    slotEl.innerHTML = `<span class="chipInSlot" data-in="${label}" title="Click to remove">${label}</span>`;
+  }
+
+  function buildLabelBank(container, labels){
+    container.innerHTML = "";
+    labels.forEach((lab, i)=>{
+      const d=document.createElement("div");
+      d.className="chip";
+      d.textContent = lab;
+      d.setAttribute("draggable","true");
+      d.dataset.label = lab;
+      d.id = "chip_" + container.id + "_" + i;
+      container.appendChild(d);
+    });
+  }
+
+  function wireLabelDrag(container, slots, onDropApply, onRemoveApply){
+    const chips = Array.from(container.querySelectorAll(".chip"));
+    chips.forEach(chip=>{
+      chip.addEventListener("dragstart",(e)=>{
+        if(chip.classList.contains("placed")){ e.preventDefault(); return; }
+        e.dataTransfer.setData("text/plain", chip.dataset.label);
+        e.dataTransfer.effectAllowed="move";
+      });
+    });
+
+    slots.forEach(slot=>{
+      slot.addEventListener("dragover",(e)=>{
+        e.preventDefault();
+        slot.classList.add("over");
+        e.dataTransfer.dropEffect="move";
+      });
+      slot.addEventListener("dragleave",()=>slot.classList.remove("over"));
+      slot.addEventListener("drop",(e)=>{
+        e.preventDefault();
+        slot.classList.remove("over");
+        const label = e.dataTransfer.getData("text/plain");
+        if(!label) return;
+        onDropApply(slot, label);
+        refreshPlaced(container);
+      });
+
+      slot.addEventListener("click",(e)=>{
+        const t=e.target;
+        if(!(t && t.classList && t.classList.contains("chipInSlot"))) return;
+        onRemoveApply(slot);
+        refreshPlaced(container);
+      });
+    });
+  }
+
+  function refreshPlaced(container){
+    const used = new Set();
+    if(container === compareLabelBank){
+      if(state.labels.cmpTop) used.add(state.labels.cmpTop);
+      if(state.labels.cmpBottom) used.add(state.labels.cmpBottom);
+    }else{
+      if(state.labels.pwLeft) used.add(state.labels.pwLeft);
+      if(state.labels.pwRight) used.add(state.labels.pwRight);
+      if(state.labels.pwTotal) used.add(state.labels.pwTotal);
+    }
+
+    Array.from(container.querySelectorAll(".chip")).forEach(ch=>{
+      const lab = ch.dataset.label;
+      const isUsed = used.has(lab);
+      ch.classList.toggle("placed", isUsed);
+      ch.setAttribute("draggable", isUsed ? "false" : "true");
+    });
+  }
+
+  /* ===========================
+     DRAG: OPERATORS
+  ============================ */
+  function wireOpDrag(){
+    const chips = Array.from(document.querySelectorAll(".opChip"));
+
+    function slotKeyFromId(id){
+      if(id === "op1") return "op1";
+      if(id === "opEq") return "eq";
+      return null;
+    }
+    function setSlot(slotEl, symbol){
+      const key = slotKeyFromId(slotEl.id);
+      if(!key) return;
+      state.ops[key] = symbol;
+      slotEl.classList.add("filled");
+      slotEl.textContent = symbol;
+      slotEl.style.color = "#0f172a";
+    }
+    function clearSlot(slotEl){
+      const key = slotKeyFromId(slotEl.id);
+      if(!key) return;
+      state.ops[key] = null;
+      slotEl.classList.remove("filled");
+      slotEl.textContent = "?";
+      slotEl.style.color = "rgba(15,23,42,.55)";
+    }
+    function bindSlot(slotEl){
+      if(!slotEl) return;
+      slotEl.addEventListener("dragover",(e)=>{
+        e.preventDefault();
+        slotEl.classList.add("over");
+        e.dataTransfer.dropEffect="move";
+      });
+      slotEl.addEventListener("dragleave",()=>slotEl.classList.remove("over"));
+      slotEl.addEventListener("drop",(e)=>{
+        e.preventDefault();
+        slotEl.classList.remove("over");
+        const sym = e.dataTransfer.getData("text/plain");
+        if(!["+", "−", "×", "÷", "="].includes(sym)) return;
+        setSlot(slotEl, sym);
+      });
+      slotEl.addEventListener("click", ()=>{ if(slotEl.classList.contains("filled")) clearSlot(slotEl); });
+    }
+
+    chips.forEach(ch=>{
+      ch.addEventListener("dragstart",(e)=>{
+        const sym = ch.dataset.op === "-" ? "−" : ch.dataset.op;
+        e.dataTransfer.setData("text/plain", sym);
+        e.dataTransfer.effectAllowed="move";
+      });
+    });
+
+    function firstEmptySlotEl(){
+      const s1 = document.getElementById("op1");
+      const s2 = document.getElementById("opEq");
+      if(s1 && !s1.classList.contains("filled")) return s1;
+      if(s2 && !s2.classList.contains("filled")) return s2;
+      return null;
+    }
+
+    // ✅ Double-click an operator chip to snap it into the next empty circle
+    chips.forEach(ch=>{
+      ch.addEventListener("dblclick", (e)=>{
+        e.preventDefault();
+        const sym = ch.dataset.op === "-" ? "−" : ch.dataset.op;
+        if(!["+", "−", "×", "÷", "="].includes(sym)) return;
+
+        const slotEl = firstEmptySlotEl();
+        if(!slotEl) return;
+
+        setSlot(slotEl, sym);
+      });
+    });
+
+    bindSlot(document.getElementById("op1"));
+    bindSlot(document.getElementById("opEq"));
+  }
+
+  /* ===========================
+     UI: MODE BUTTONS
+  ============================ */
+  function setFamilyButtons(){
+    modeCompare.classList.toggle("active", state.family==="compare");
+    modePartWhole.classList.toggle("active", state.family==="partwhole");
+    modeRand.classList.toggle("active", state.family==="quiz");
+  }
+
+  /* ===========================
+     RENDER QUESTION
+  ============================ */
+  function renderQuestionText(){
+    qText.innerHTML = state.problem ? state.problem.question : "";
+  }
+
+  /* ===========================
+     PART-WHOLE: MAP small/big
+  ============================ */
+  function mapPartWhole(){
+    const p = state.problem;
+    const v1 = Number(p.values.part1||0);
+    const v2 = Number(p.values.part2||0);
+
+    const small = Math.min(v1, v2);
+    const big   = Math.max(v1, v2);
+
+    let smallLabel = (v1<=v2) ? p.parts[0] : p.parts[1];
+    let bigLabel   = (v1<=v2) ? p.parts[1] : p.parts[0];
+
+    state.pwMap.leftVal = small;
+    state.pwMap.rightVal = big;
+    state.pwMap.leftLabel = smallLabel;
+    state.pwMap.rightLabel = bigLabel;
+    state.pwMap.totalVal = Number(p.values.total||0);
+    state.pwMap.unknown = p.unknown || "total";
+  }
+
+  function applyPWWidths(){
+    const small = state.pwMap.leftVal;
+    const big = state.pwMap.rightVal;
+    const total = Math.max(0.0001, small + big);
+
+    let leftPct = (small / total) * 100;
+    const minPct = Number(getComputedStyle(document.documentElement).getPropertyValue("--pwMinPct")) || 20;
+    const maxPct = Number(getComputedStyle(document.documentElement).getPropertyValue("--pwMaxPct")) || 80;
+    leftPct = Math.max(minPct, Math.min(maxPct, leftPct));
+    const rightPct = 100 - leftPct;
+
+    pwLeftSeg.style.flex  = `0 0 ${leftPct}%`;
+    pwRightSeg.style.flex = `0 0 ${rightPct}%`;
+    pwDivider.style.left = `${leftPct}%`;
+
+    pwBottomLeft.style.flex = `0 0 ${leftPct}%`;
+    pwBottomRight.style.flex = `0 0 ${rightPct}%`;
+
+    document.getElementById("pwPartDropLeftWrap").style.width = `${leftPct}%`;
+    document.getElementById("pwPartDropRightWrap").style.width = `${rightPct}%`;
+  }
+
+  /* ===========================
+     RENDER MODEL
+  ============================ */
+  function resetAllLabelState(){
+    state.labels.cmpTop=null;
+    state.labels.cmpBottom=null;
+    state.labels.pwLeft=null;
+    state.labels.pwRight=null;
+    state.labels.pwTotal=null;
+
+    clearSlotUI(cmpSlotTop);
+    clearSlotUI(cmpSlotBottom);
+    clearSlotUI(pwSlotLeft);
+    clearSlotUI(pwSlotRight);
+    clearSlotUI(pwSlotTotal);
+
+    pwSlotLeft.classList.remove("filled");
+    pwSlotRight.classList.remove("filled");
+    pwSlotLeft.textContent="drop label";
+    pwSlotRight.textContent="drop label";
+  }
+
+  function renderModel(){
+    modelCompare.style.display = (state.currentKind==="compare") ? "block" : "none";
+    modelPartWhole.style.display = (state.currentKind==="partwhole") ? "block" : "none";
+
+    resetAllLabelState();
+    resetOps();
+    state.modelChecked = false;
+    lockEquation(true);
+
+    if(state.currentKind==="compare"){
+      const p = state.problem;
+
+      buildLabelBank(compareLabelBank, [p.largerName, p.smallerName]);
+
+      if(p.cmpType==="findLarger"){
+        cmpTopValue.innerHTML = `<span class="qMark">?</span>`;
+        cmpLeftValue.innerHTML = moneyBlank("m_smaller");
+        cmpRightValue.innerHTML = moneyBlank("m_diff");
+      }else if(p.cmpType==="findSmaller"){
+        cmpTopValue.innerHTML = moneyBlank("m_larger");
+        cmpLeftValue.innerHTML = `<span class="qMark">?</span>`;
+        cmpRightValue.innerHTML = moneyBlank("m_diff");
+      }else{
+        cmpTopValue.innerHTML = moneyBlank("m_larger");
+        cmpLeftValue.innerHTML = moneyBlank("m_smaller");
+        cmpRightValue.innerHTML = `<span class="qMark">?</span>`;
+      }
+
+      const slots = [cmpSlotTop, cmpSlotBottom];
+      const applyDrop = (slotEl, label)=>{
+        if(slotEl===cmpSlotTop) state.labels.cmpTop = label;
+        else state.labels.cmpBottom = label;
+        renderSlot(slotEl, label);
+      };
+      const remove = (slotEl)=>{
+        if(slotEl===cmpSlotTop) state.labels.cmpTop = null;
+        else state.labels.cmpBottom = null;
+        clearSlotUI(slotEl);
+      };
+      wireLabelDrag(compareLabelBank, slots, applyDrop, remove);
+      refreshPlaced(compareLabelBank);
+
+    }else{
+      const p = state.problem;
+      mapPartWhole();
+      applyPWWidths();
+
+      buildLabelBank(pwLabelBank, [state.pwMap.leftLabel, state.pwMap.rightLabel, p.totalLabel]);
+
+      if(state.pwMap.unknown === "total"){
+        pwTopUnknown.innerHTML = `<span class="qMark">?</span>`;
+      }else{
+        pwTopUnknown.innerHTML = moneyBlank("pw_total_value");
+      }
+
+      const unknown = state.pwMap.unknown;
+      const v1 = Number(p.values.part1||0);
+      const v2 = Number(p.values.part2||0);
+      const part1OnLeft = (v1<=v2);
+      const unknownOnLeft =
+        (unknown==="part1" && part1OnLeft) ||
+        (unknown==="part2" && !part1OnLeft);
+
+      if(unknown === "total"){
+        pwLeftValue.innerHTML = moneyBlank("pw_left_value");
+        pwRightValue.innerHTML = moneyBlank("pw_right_value");
+      }else{
+        pwLeftValue.innerHTML = unknownOnLeft ? `<span class="qMark">?</span>` : moneyBlank("pw_left_value");
+        pwRightValue.innerHTML = unknownOnLeft ? moneyBlank("pw_right_value") : `<span class="qMark">?</span>`;
+      }
+
+      const slots = [pwSlotLeft, pwSlotRight, pwSlotTotal];
+
+      const applyDrop = (slotEl, label)=>{
+        if(slotEl===pwSlotLeft) state.labels.pwLeft = label;
+        else if(slotEl===pwSlotRight) state.labels.pwRight = label;
+        else state.labels.pwTotal = label;
+
+        if(slotEl===pwSlotLeft || slotEl===pwSlotRight){
+          slotEl.classList.add("filled");
+          slotEl.innerHTML = `<span class="chipInSlot" title="Click to remove">${label}</span>`;
+          slotEl.style.color="#0f172a";
+          slotEl.style.background="#fff";
+          slotEl.style.borderStyle="solid";
+        }else{
+          renderSlot(slotEl, label);
+        }
+      };
+
+      const remove = (slotEl)=>{
+        if(slotEl===pwSlotLeft){ state.labels.pwLeft=null; slotEl.classList.remove("filled"); slotEl.textContent="drop label"; }
+        else if(slotEl===pwSlotRight){ state.labels.pwRight=null; slotEl.classList.remove("filled"); slotEl.textContent="drop label"; }
+        else { state.labels.pwTotal=null; clearSlotUI(slotEl); }
+      };
+
+      wireLabelDrag(pwLabelBank, slots, applyDrop, remove);
+      refreshPlaced(pwLabelBank);
+    }
+  }
+
+  /* ===========================
+     RENDER EQUATION + FINAL
+  ============================ */
+  function renderEquation(){
+    eqLine.innerHTML =
+      moneyBlank("e_left") + opSlot("op1") + moneyBlank("e_right") + opSlot("opEq") + moneyBlank("e_res");
+    wireOpDrag();
+
+    // ✅ Answer box + prominent check button next to it
+    finalLine.innerHTML =
+      `<div class="answerRow">`+
+        `<span class="answerLabel">Answer:</span>`+
+        `${moneyBlank("final")}`+
+        `<button class="btn primary checkBig" id="btnCheckEq" type="button">Check Equation &amp; Answer</button>`+
+      `</div>`;
+
+    // wire the new prominent button
+    const btn = document.getElementById("btnCheckEq");
+    if(btn) btn.addEventListener("click", check);
+  }
+
+  /* ===========================
+     GATE FLOW
+  ============================ */
+  function resetGate(){
+    state.gate.chosen = null;
+    state.gate.passed = false;
+    state.modelChecked = false;
+
+    btnChooseCompare.classList.remove("correct","wrong");
+    btnChoosePartWhole.classList.remove("correct","wrong");
+    gateHint.textContent = "Choose the correct model to continue.";
+    setModelOverlay(true);
+    lockEquation(true);
+    updateModelStatus();
+  }
+
+  function chooseModel(choice){
+    const want = expectedModelKind();
+    state.gate.chosen = choice;
+
+    if(choice === want){
+      state.gate.passed = true;
+      btnChooseCompare.classList.remove("wrong");
+      btnChoosePartWhole.classList.remove("wrong");
+      if(choice==="compare"){ btnChooseCompare.classList.add("correct"); btnChoosePartWhole.classList.remove("correct"); }
+      else { btnChoosePartWhole.classList.add("correct"); btnChooseCompare.classList.remove("correct"); }
+
+      gateHint.textContent = "Correct ✅ Now fill in the model, then press Check Model.";
+      setModelOverlay(false);
+
+      renderModel();
+      renderEquation();
+      updateModelStatus();
+      hideMsg();
+    }else{
+      state.gate.passed = false;
+      if(choice==="compare"){ btnChooseCompare.classList.add("wrong"); }
+      else { btnChoosePartWhole.classList.add("wrong"); }
+      gateHint.textContent = "Wrong ❌ Choose again to continue.";
+      playSound("wrong");
+      showMsg("Wrong model. Try again.", "bad");
+      setModelOverlay(true);
+      updateModelStatus();
+    }
+  }
+
+  btnChooseCompare.addEventListener("click", ()=>chooseModel("compare"));
+  btnChoosePartWhole.addEventListener("click", ()=>chooseModel("partwhole"));
+
+  /* ===========================
+     CHECK MODEL
+  ============================ */
+  function compareLabelsCorrect(){
+    const p = state.problem;
+    return state.labels.cmpTop === p.largerName && state.labels.cmpBottom === p.smallerName;
+  }
+
+  function partWholeLabelsCorrect(){
+    const p = state.problem;
+    const wantLeft = state.pwMap.leftLabel;
+    const wantRight = state.pwMap.rightLabel;
+    const wantTotal = p.totalLabel;
+    return state.labels.pwLeft===wantLeft && state.labels.pwRight===wantRight && state.labels.pwTotal===wantTotal;
+  }
+
+  function checkModel(){
+    if(!state.gate.passed){
+      playSound("wrong");
+      showMsg("Choose the correct model first.", "bad");
+      return false;
+    }
+
+    const p = state.problem;
+
+    if(state.currentKind==="compare"){
+      if(!compareLabelsCorrect()){
+        playSound("wrong");
+        showMsg("Drag the item labels correctly: top bar = larger amount, bottom bar = smaller amount.", "bad");
+        modelStatus.className = "statusPill bad";
+        modelStatus.textContent = "Model not correct ❌";
+        return false;
+      }
+
+      if(p.cmpType==="findLarger"){
+        if(!requireAllMoney(["m_smaller","m_diff"])){
+          playSound("wrong");
+          showMsg("Fill in the model blanks (smaller amount and difference).", "bad");
+          modelStatus.className = "statusPill bad";
+          modelStatus.textContent = "Model incomplete ❌";
+          return false;
+        }
+        const ok =
+          cents(readMoney("m_smaller")) === cents(p.values.smaller) &&
+          cents(readMoney("m_diff"))    === cents(p.values.difference);
+        if(!ok){
+          playSound("wrong");
+          showMsg("Model numbers not correct. Check smaller amount and difference.", "bad");
+          modelStatus.className = "statusPill bad";
+          modelStatus.textContent = "Model not correct ❌";
+          return false;
+        }
+
+      }else if(p.cmpType==="findSmaller"){
+        if(!requireAllMoney(["m_larger","m_diff"])){
+          playSound("wrong");
+          showMsg("Fill in the model blanks (larger amount and difference).", "bad");
+          modelStatus.className = "statusPill bad";
+          modelStatus.textContent = "Model incomplete ❌";
+          return false;
+        }
+        const ok =
+          cents(readMoney("m_larger")) === cents(p.values.larger) &&
+          cents(readMoney("m_diff"))   === cents(p.values.difference);
+        if(!ok){
+          playSound("wrong");
+          showMsg("Model numbers not correct. Check larger amount and difference.", "bad");
+          modelStatus.className = "statusPill bad";
+          modelStatus.textContent = "Model not correct ❌";
+          return false;
+        }
+
+      }else{
+        if(!requireAllMoney(["m_larger","m_smaller"])){
+          playSound("wrong");
+          showMsg("Fill in the model blanks (larger amount and smaller amount).", "bad");
+          modelStatus.className = "statusPill bad";
+          modelStatus.textContent = "Model incomplete ❌";
+          return false;
+        }
+        const ok =
+          cents(readMoney("m_larger"))  === cents(p.values.larger) &&
+          cents(readMoney("m_smaller")) === cents(p.values.smaller);
+        if(!ok){
+          playSound("wrong");
+          showMsg("Model numbers not correct. Check larger and smaller amounts.", "bad");
+          modelStatus.className = "statusPill bad";
+          modelStatus.textContent = "Model not correct ❌";
+          return false;
+        }
+      }
+
+    }else{
+      if(!partWholeLabelsCorrect()){
+        playSound("wrong");
+        showMsg("Drag labels correctly: smaller part on the shorter segment, bigger part on the longer segment, and total label at the top.", "bad");
+        modelStatus.className = "statusPill bad";
+        modelStatus.textContent = "Model not correct ❌";
+        return false;
+      }
+
+      const unknown = state.pwMap.unknown;
+      const v1 = Number(p.values.part1||0);
+      const v2 = Number(p.values.part2||0);
+      const part1OnLeft = (v1<=v2);
+      const unknownOnLeft =
+        (unknown==="part1" && part1OnLeft) ||
+        (unknown==="part2" && !part1OnLeft);
+
+      if(unknown!=="total"){
+        if(!requireAllMoney(["pw_total_value"])){
+          playSound("wrong");
+          showMsg("Fill in the total value near the top brace.", "bad");
+          modelStatus.className = "statusPill bad";
+          modelStatus.textContent = "Model incomplete ❌";
+          return false;
+        }
+        if(cents(readMoney("pw_total_value")) !== cents(state.pwMap.totalVal)){
+          playSound("wrong");
+          showMsg("Total value not correct.", "bad");
+          modelStatus.className = "statusPill bad";
+          modelStatus.textContent = "Model not correct ❌";
+          return false;
+        }
+      }
+
+      if(unknown==="total"){
+        if(!requireAllMoney(["pw_left_value","pw_right_value"])){
+          playSound("wrong");
+          showMsg("Fill in BOTH part values under the braces.", "bad");
+          modelStatus.className = "statusPill bad";
+          modelStatus.textContent = "Model incomplete ❌";
+          return false;
+        }
+        if(cents(readMoney("pw_left_value")) !== cents(state.pwMap.leftVal) ||
+           cents(readMoney("pw_right_value")) !== cents(state.pwMap.rightVal)){
+          playSound("wrong");
+          showMsg("Part values not correct. Smaller part goes on the shorter segment; bigger part on the longer segment.", "bad");
+          modelStatus.className = "statusPill bad";
+          modelStatus.textContent = "Model not correct ❌";
+          return false;
+        }
+      }else{
+        const knownId = unknownOnLeft ? "pw_right_value" : "pw_left_value";
+        const knownExp = unknownOnLeft ? state.pwMap.rightVal : state.pwMap.leftVal;
+        if(!requireAllMoney([knownId])){
+          playSound("wrong");
+          showMsg("Fill in the known part value under the brace.", "bad");
+          modelStatus.className = "statusPill bad";
+          modelStatus.textContent = "Model incomplete ❌";
+          return false;
+        }
+        if(cents(readMoney(knownId)) !== cents(knownExp)){
+          playSound("wrong");
+          showMsg("Known part value not correct.", "bad");
+          modelStatus.className = "statusPill bad";
+          modelStatus.textContent = "Model not correct ❌";
+          return false;
+        }
+      }
+    }
+
+    state.modelChecked = true;
+    lockEquation(false);
+    updateModelStatus();
+    showMsg("Correct model ✅ Now solve the question.", "good");
+    playSound("correct");
+    return true;
+  }
+
+  btnCheckModel.addEventListener("click", checkModel);
+
+  /* ===========================
+     NEW QUESTION
+  ============================ */
+  function newQuestion(){
+    hideMsg();
+
+    // ---------- QUIZ MODE ----------
+    if(state.family==="quiz"){
+      // start a new quiz set if needed
+      if(!state.quiz.active || !Array.isArray(state.quiz.set) || state.quiz.set.length!==state.quiz.total || state.quiz.idx>=state.quiz.total){
+        state.quiz.active = true;
+        state.quiz.idx = 0;
+        state.quiz.score = 0;
+        state.quiz.total = 10;
+        state.quiz.set = buildQuizSet(); // 5 compare + 5 partwhole shuffled
+        state.quiz.completedShown = false;
+      }
+
+      state.problem = state.quiz.set[state.quiz.idx];
+      state.currentKind = state.problem.kind; // "compare" or "partwhole"
+      state.quiz.marked = false;
+
+      // badge shows quiz score /10
+      updateScoreBadge();
+      scoreDot.style.background="#a3a3a3";
+
+      renderQuestionText();
+      resetGate();
+
+      modelCompare.style.display = "none";
+      modelPartWhole.style.display = "none";
+      eqLine.innerHTML = "";
+      finalLine.innerHTML = "";
+      resetOps();
+      resetAllLabelState();
+      updateModelStatus();
+
+      if(state.currentKind==="partwhole"){
+        mapPartWhole();
+        applyPWWidths();
+      }
+
+      // move pointer to next question (current question is already loaded)
+      state.quiz.idx += 1;
+      return;
+    }
+
+    // ---------- NORMAL MODE (Compare / Part-Whole) ----------
+    resetScore();
+
+    let kind="compare";
+    if(state.family==="partwhole") kind="partwhole";
+    else if(state.family==="compare") kind="compare";
+    else kind = (Math.random()<0.5 ? "compare" : "partwhole");
+    state.currentKind = kind;
+
+    state.problem = (kind==="compare") ? genCompare() : genPartWhole();
+
+    renderQuestionText();
+    resetGate();
+
+    modelCompare.style.display = "none";
+    modelPartWhole.style.display = "none";
+    eqLine.innerHTML = "";
+    finalLine.innerHTML = "";
+    resetOps();
+    resetAllLabelState();
+    updateModelStatus();
+
+    if(kind==="partwhole"){
+      mapPartWhole();
+      applyPWWidths();
+    }
+  }
+
+  /* ===========================
+     CHECK FINAL
+  ============================ */
+  function requiredOperatorForProblem(p){
+    if(p.kind==="compare"){
+      if(p.cmpType==="findLarger") return "+";
+      if(p.cmpType==="findSmaller") return "−";
+      return "−";
+    }
+    return (p.equation.op === "+") ? "+" : "−";
+  }
+
+  function check(){
+    if(!state.modelChecked){
+      playSound("wrong");
+      showMsg("Press Check Model first.", "bad");
+      return;
+    }
+
+    const p = state.problem;
+    const op1 = state.ops.op1;
+    const eq  = state.ops.eq;
+
+    if(!op1 || !eq){
+      playSound("wrong");
+      showMsg("Drag the operators (including = ) into the circles.", "bad");
+      setScore(false);
+      pushToXAPI(0, "Operators missing.");
+      return;
+    }
+
+    const must=["e_left","e_right","e_res","final"];
+    if(!requireAllMoney(must)){
+      playSound("wrong");
+      showMsg("Please fill in ALL blanks with money amounts.", "bad");
+      setScore(false);
+      pushToXAPI(0, feedback(false));
+      return;
+    }
+
+    const requiredOp1 = requiredOperatorForProblem(p);
+    const requiredOp1Symbol = (requiredOp1 === "-") ? "−" : requiredOp1;
+
+    if(!(state.ops.op1 === requiredOp1Symbol && state.ops.eq === "=")){
+      playSound("wrong");
+      showMsg(`Wrong operators. Use ${requiredOp1Symbol} and =.`, "bad");
+      setScore(false);
+      pushToXAPI(0, `Incorrect operators. Use ${requiredOp1Symbol} and =.`);
+      return;
+    }
+
+    const L   = readMoney("e_left");
+    const R   = readMoney("e_right");
+    const RES = readMoney("e_res");
+    const FIN = readMoney("final");
+
+    const Lc   = cents(L);
+    const Rc   = cents(R);
+    const RESc = cents(RES);
+    const FINc = cents(FIN);
+
+    if(p.kind==="compare"){
+
+      if(p.cmpType==="findLarger"){
+        const expLc   = cents(p.values.smaller);
+        const expRc   = cents(p.values.difference);
+        const expRESc = cents(p.values.larger);
+        const expFINc = expRESc;
+
+        const addOrderOK = (Lc===expLc && Rc===expRc) || (Lc===expRc && Rc===expLc);
+        finish(addOrderOK && RESc===expRESc && FINc===expFINc);
+        return;
+      }
+
+      if(p.cmpType==="findSmaller"){
+        const expLc   = cents(p.values.larger);
+        const expRc   = cents(p.values.difference);
+        const expRESc = cents(p.values.smaller);
+        const expFINc = expRESc;
+
+        finish(Lc===expLc && Rc===expRc && RESc===expRESc && FINc===expFINc);
+        return;
+      }
+
+      const expLc   = cents(p.values.larger);
+      const expRc   = cents(p.values.smaller);
+      const expRESc = cents(p.values.difference);
+      const expFINc = expRESc;
+
+      finish(Lc===expLc && Rc===expRc && RESc===expRESc && FINc===expFINc);
+      return;
+
+    }else{
+      const expLc   = cents(p.equation.left);
+      const expRc   = cents(p.equation.right);
+      const expRESc = cents(p.equation.res);
+      const expFINc = expRESc;
+
+      if(p.equation.op === "+"){
+        const addOrderOK = (Lc===expLc && Rc===expRc) || (Lc===expRc && Rc===expLc);
+        finish(addOrderOK && RESc===expRESc && FINc===expFINc);
+        return;
+      }
+
+      finish(Lc===expLc && Rc===expRc && RESc===expRESc && FINc===expFINc);
+      return;
+    }
+  }
+
+  function finish(ok){
+    if(ok){
+      setScore(true);
+      showMsg("Correct! Well done! ✅","good");
+      playSound("correct");
+      fireConfetti();
+      pushToXAPI(1, feedback(true));
+    }else{
+      setScore(false);
+      showMsg("Not quite. Check your equation and final answer.","bad");
+      playSound("wrong");
+      pushToXAPI(0, feedback(false));
+    }
+
+    // ✅ End-of-quiz message after the 10th question is checked (shown once)
+    if(state.family==="quiz" && state.quiz.idx>=state.quiz.total && !state.quiz.completedShown){
+      state.quiz.completedShown = true;
+      const line = `Quiz complete! You scored ${state.quiz.score}/${state.quiz.total}.`;
+      msg.textContent = msg.textContent + "\n" + line;
+    }
+  }
+
+  function feedback(isCorrect){
+    const p = state.problem;
+    const prefix = isCorrect ? "Correct. " : "Incorrect. ";
+    if(p.kind==="compare"){
+      if(p.cmpType==="findLarger"){
+        return prefix + `Compare: $${money(p.values.smaller)} + $${money(p.values.difference)} = $${money(p.values.larger)}.`;
+      }
+      if(p.cmpType==="findSmaller"){
+        return prefix + `Compare: $${money(p.values.larger)} − $${money(p.values.difference)} = $${money(p.values.smaller)}.`;
+      }
+      return prefix + `Compare: $${money(p.values.larger)} − $${money(p.values.smaller)} = $${money(p.values.difference)}.`;
+    }
+    return prefix + `Part-Whole: $${money(p.equation.left)} ${p.equation.op} $${money(p.equation.right)} = $${money(p.equation.res)}.`;
+  }
+
+  function pushToXAPI(score, feedbackText){
+    try{
+      const sIn=document.getElementById("score-input");
+      const fIn=document.getElementById("feedback-input");
+      if(sIn) sIn.value=String(score);
+      if(fIn) fIn.value=String(feedbackText||"");
+
+      const payload = {
+        score, feedback: feedbackText||"",
+        kind: state.currentKind,
+        family: state.family,
+        problem: state.problem,
+        labels: state.labels,
+        ops: state.ops,
+        gate: state.gate,
+        modelChecked: state.modelChecked,
+        ts: Date.now(),
+        activityId: window.__ACTIVITY_ID__||""
+      };
+
+      if(typeof window.storeState==="function") window.storeState(payload);
+      else if(typeof window.sendState==="function") window.sendState(payload);
+    }catch(e){}
+  }
+
+  /* ===========================
+     BUTTON WIRING
+  ============================ */
+  modeCompare.addEventListener("click", ()=>{
+    state.family="compare";
+    state.quiz.active=false;
+    setFamilyButtons();
+    newQuestion();
+  });
+  modePartWhole.addEventListener("click", ()=>{
+    state.family="partwhole";
+    state.quiz.active=false;
+    setFamilyButtons();
+    newQuestion();
+  });
+  modeRand.addEventListener("click", ()=>{
+    state.family="quiz";
+    state.quiz.active=false;
+    setFamilyButtons();
+    newQuestion();
+  });
+
+  document.getElementById("btnNew").addEventListener("click", newQuestion);
+
+  /* ===========================
+     ENTER KEY -> CHECK
+  ============================ */
+  document.addEventListener("keydown",(e)=>{
+    if(e.key==="Enter"){
+      const a=document.activeElement;
+      if(a && a.tagName==="INPUT"){
+        e.preventDefault();
+        check();
+      }
+    }
+  });
+
+  /* ===========================
+     WORKING SPACE (Canvas)
+  ============================ */
+  const canvas = document.getElementById("workCanvas");
+  // ✅ Keep canvas perfectly sized to the right panel at all times
+  let ro;
+  function installCanvasAutoResize(){
+    try{
+      const wrap = document.querySelector(".workCanvasWrap");
+      if(!wrap) return;
+
+      if(ro) ro.disconnect();
+      ro = new ResizeObserver(()=> {
+        // wait 1 frame so layout settles
+        requestAnimationFrame(resizeCanvas);
+      });
+      ro.observe(wrap);
+    }catch(e){}
+  }
+
+  const btnWorkClear = document.getElementById("btnWorkClearTop");
+
+  let ctx, drawing=false, last=null;
+  const strokes = [];
+
+  function resizeCanvas(){
+    if(!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    if(rect.width < 2 || rect.height < 2) return;
+
+    const ratio = Math.max(1, Math.min(2, window.devicePixelRatio||1));
+    canvas.width = Math.floor(rect.width * ratio);
+    canvas.height = Math.floor(rect.height * ratio);
+    ctx = canvas.getContext("2d");
+    ctx.setTransform(ratio,0,0,ratio,0,0);
+    redrawWork();
+  }
+
+  function redrawWork(){
+    if(!ctx) return;
+    const w = canvas.getBoundingClientRect().width;
+    const h = canvas.getBoundingClientRect().height;
+
+    ctx.save();
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle="#ffffff";
+    ctx.fillRect(0,0,w,h);
+
+    ctx.lineCap="round";
+    ctx.lineJoin="round";
+    ctx.strokeStyle = "#0b1220";
+    ctx.lineWidth = 3;
+
+    for(const s of strokes){
+      ctx.beginPath();
+      for(let i=0;i<s.length;i++){
+        const p=s[i];
+        if(i===0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function getPosFromPointer(e){
+    const rect = canvas.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
+
+  function pointerDown(e){
+    e.preventDefault();
+    canvas.setPointerCapture(e.pointerId);
+    drawing = true;
+    last = getPosFromPointer(e);
+    strokes.push([last]);
+    redrawWork();
+  }
+
+  function pointerMove(e){
+    if(!drawing) return;
+    e.preventDefault();
+    const p = getPosFromPointer(e);
+    const curStroke = strokes[strokes.length-1];
+    curStroke.push(p);
+    last = p;
+    redrawWork();
+  }
+
+  function pointerUp(e){
+    try{ canvas.releasePointerCapture(e.pointerId); }catch(_){}
+    drawing = false;
+    last = null;
+  }
+
+  canvas.addEventListener("pointerdown", pointerDown, {passive:false});
+  canvas.addEventListener("pointermove", pointerMove, {passive:false});
+  canvas.addEventListener("pointerup", pointerUp, {passive:true});
+  canvas.addEventListener("pointercancel", pointerUp, {passive:true});
+  canvas.addEventListener("pointerleave", pointerUp, {passive:true});
+
+  btnWorkClear.addEventListener("click", ()=>{
+    strokes.length=0;
+    redrawWork();
+  });
+
+  window.addEventListener("resize", ()=>{
+    resizeCanvas();
+    if(state.currentKind==="partwhole" && state.problem){
+      try{ applyPWWidths(); }catch(e){}
+    }
+  });
+
+  /* ===========================
+     INIT
+  ============================ */
+  confettiInit();
+  setFamilyButtons();
+  updateScoreBadge();
+
+  requestAnimationFrame(()=>{
+    installCanvasAutoResize();
+    resizeCanvas();
+    setTimeout(resizeCanvas, 0);
+    setTimeout(resizeCanvas, 120);
+  });
+
+  newQuestion();
+
+})();
+</script>
+</body>
+</html>
