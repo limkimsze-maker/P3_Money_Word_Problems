@@ -1081,33 +1081,93 @@
   /* ===========================
      SOUND KIT (auto-unlock on first pointer)
   ============================ */
-  const SOUND_VER = "20260128a";
-  const sounds = {
-    correct: new Audio("./correct.mp3?v=" + SOUND_VER),
-    wrong:   new Audio("./wrong.mp3?v=" + SOUND_VER),
-    clock:   new Audio("./clock.mp3?v=" + SOUND_VER),
-  };
-  Object.values(sounds).forEach(a=>{ a.preload="auto"; a.playsInline=true; });
+ /* ===========================
+   SOUND KIT (reliable unlock)
+============================ */
+const SOUND_VER = "20260128a";
+const sounds = {
+  correct: new Audio("./correct.mp3?v=" + SOUND_VER),
+  wrong:   new Audio("./wrong.mp3?v=" + SOUND_VER),
+  clock:   new Audio("./clock.mp3?v=" + SOUND_VER),
+};
 
-  let soundUnlocked=false;
-  async function unlockSound(){
-    try{
-      for(const a of Object.values(sounds)){
-        a.muted=true; await a.play();
-        a.pause(); a.currentTime=0;
-        a.muted=false;
-      }
-      soundUnlocked=true;
-    }catch(e){}
+Object.values(sounds).forEach(a=>{
+  a.preload = "auto";
+  a.playsInline = true;
+  a.crossOrigin = "anonymous";
+});
+
+let soundUnlocked = false;
+
+async function safePlay(a){
+  try{
+    a.pause();
+    a.currentTime = 0;
+    const p = a.play();
+    if(p && typeof p.then === "function") await p;
+    return true;
+  }catch(e){
+    return false;
   }
-  function playSound(name){
-    try{
-      const a=sounds[name]; if(!a) return;
-      if(!soundUnlocked) unlockSound();
-      a.currentTime=0; a.play().catch(()=>{});
-    }catch(e){}
+}
+
+async function unlockSound(){
+  // Must be called from a user gesture (click/tap) for best reliability
+  try{
+    // Use a very short "muted play" pass to satisfy autoplay restrictions
+    for(const a of Object.values(sounds)){
+      a.muted = true;
+      await safePlay(a);
+      a.pause();
+      a.currentTime = 0;
+      a.muted = false;
+    }
+    soundUnlocked = true;
+
+    const btn = document.getElementById("btnUnlockAudio");
+    if(btn){
+      btn.textContent = "🔊 Audio Unlocked";
+      btn.disabled = true;
+      btn.classList.add("primary");
+    }
+  }catch(e){
+    soundUnlocked = false;
   }
-  window.addEventListener("pointerdown", ()=>{ if(!soundUnlocked) unlockSound(); }, {once:true, passive:true});
+}
+
+async function playSound(name){
+  const a = sounds[name];
+  if(!a) return;
+
+  // If not unlocked, try once (might still fail if no gesture)
+  if(!soundUnlocked){
+    await unlockSound();
+  }
+
+  // Attempt actual play
+  const ok = await safePlay(a);
+
+  // If still blocked, show user the unlock button prompt
+  if(!ok){
+    const btn = document.getElementById("btnUnlockAudio");
+    if(btn){
+      btn.disabled = false;
+      btn.textContent = "🔊 Unlock Audio (click)";
+      btn.classList.remove("primary");
+    }
+  }
+}
+
+// Wire the unlock button
+document.addEventListener("DOMContentLoaded", ()=>{
+  const btn = document.getElementById("btnUnlockAudio");
+  if(btn){
+    btn.addEventListener("click", unlockSound);
+  }
+});
+
+// Still try a gentle auto-unlock on first pointer, but don’t rely on it
+window.addEventListener("pointerdown", ()=>{ if(!soundUnlocked) unlockSound(); }, {once:true, passive:true});
 
   /* ===========================
      QUESTION BANK
