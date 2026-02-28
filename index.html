@@ -1412,23 +1412,23 @@ window.addEventListener("pointerdown", ()=>{ if(!soundUnlocked) unlockSound(); }
     }
 
     if(type==="lessSecond"){
-      const a = "phone bill (May)";
-      const b = "phone bill (June)";
-      const may = randMoney(40, 120);
+      const a = "internet bill (July)";
+      const b = "internet bill (August)";
+      const july = randMoney(40, 120);
       const less = randMoney(5, 35);
-      const june = may - less;
+      const august = july - less;
       return {
         kind:"compare",
         cmpType:"findSmaller",
         largerName:a,
         smallerName:b,
         question:
-          `Father paid $${money(may)} for his phone bill in May.<br>`+
-          `He paid $${money(less)} less for his phone bill in June than in May.<br>`+
-          `How much was his phone bill in June?`,
-        values:{ smaller:june, difference:less, larger:may },
-        equation:{ left:may, op:"−", right:less, res:june },
-        finalSentence:`His phone bill in June was $${money(june)}.`
+          `Father paid $${money(july)} for his internet bill in July.<br>`+
+          `He paid $${money(less)} less for his internet bill in August than in July.<br>`+
+          `How much was his internet bill in August?`,
+        values:{ smaller:august, difference:less, larger:july },
+        equation:{ left:july, op:"−", right:less, res:august },
+        finalSentence:`His internet bill in August was $${money(august)}.`
       };
     }
 
