@@ -1438,15 +1438,15 @@ window.addEventListener("pointerdown", ()=>{ if(!soundUnlocked) unlockSound(); }
     return {
       kind:"compare",
       cmpType:"findLarger",
-      largerName:"Saturday movie ticket",
+      largerName:"Sunday movie ticket",
       smallerName:"weekday movie ticket",
       question:
         `A movie ticket costs $${money(weekday)} on weekdays.<br>`+
         `On weekends, it costs $${money(more)} more than on weekdays.<br>`+
-        `How much is the price of a movie ticket on Saturday?`,
+        `How much is the price of a movie ticket on Sunday?`,
       values:{ smaller:weekday, difference:more, larger:weekend },
       equation:{ left:weekday, op:"+", right:more, res:weekend },
-      finalSentence:`A movie ticket on Saturday costs $${money(weekend)}.`
+      finalSentence:`A movie ticket on Sunday costs $${money(weekend)}.`
     };
   }
 
